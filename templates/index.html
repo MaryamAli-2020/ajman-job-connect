@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ajman Job Connect</title>
+    <link rel="stylesheet" type="text/css" href="static/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Ajman Job Connect</h1>
+
+      <form id="jobForm">
+        <div class="input-group">
+          <input type="text" id="jobTitle" name="jobTitle" />
+          <button type="button" id="micButton" onclick="startRecording()">
+            <i class="fa fa-microphone"></i>
+          </button>
+          <button type="button" id="submitButton" onclick="submitForm()">
+            Submit
+          </button>
+        </div>
+      </form>
+
+      <p id="result"></p>
+      <div id="recommendations"></div>
+    </div>
+
+    <script>
+      let mediaRecorder;
+      let audioChunks = [];
+      let silenceTimeout;
+      const silenceThreshold = 5000; // 5 seconds of silence
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      let analyser;
+      let dataArray;
+
+      function startRecording() {
+        audioChunks = [];
+        document.getElementById("result").innerText = "";
+        document.getElementById("jobTitle").value = "";
+        document.getElementById("micButton").disabled = true;
+
+        document.getElementById("micButton").innerHTML =
+          '<i class="fa fa-spinner fa-spin"></i> <span class="listen">Listening...</span>';
+
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => {
+            const audioSource = audioContext.createMediaStreamSource(stream);
+            analyser = audioContext.createAnalyser();
+            audioSource.connect(analyser);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = function (e) {
+              audioChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = function () {
+              const blob = new Blob(audioChunks, { type: "audio/wav" });
+              const formData = new FormData();
+              formData.append("audio_data", blob);
+
+              fetch("/process_audio", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.transcription) {
+                    document.getElementById("result").innerText =
+                      "You said: " + data.transcription;
+                    document.getElementById("jobTitle").value =
+                      data.transcription;
+                    submitForm();
+                  } else if (data.error) {
+                    document.getElementById("result").innerText =
+                      "Error: " + data.error;
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error);
+                })
+                .finally(() => {
+                  document.getElementById("micButton").disabled = false;
+                  document.getElementById("micButton").innerHTML =
+                    '<i class="fa fa-microphone"></i>';
+                });
+            };
+
+            monitorAudioStream();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            document.getElementById("micButton").disabled = false;
+            document.getElementById("micButton").innerHTML =
+              '<i class="fa fa-microphone"></i>';
+          });
+      }
+
+      function monitorAudioStream() {
+        analyser.getByteTimeDomainData(dataArray);
+
+        let silenceDetected = true;
+        for (let i = 0; i < dataArray.length; i++) {
+          if (dataArray[i] > 128 + 10 || dataArray[i] < 128 - 10) {
+            silenceDetected = false;
+            break;
+          }
+        }
+
+        if (silenceDetected) {
+          clearTimeout(silenceTimeout);
+          silenceTimeout = setTimeout(() => {
+            mediaRecorder.stop();
+            audioContext.close();
+            console.log("Recording stopped due to 5 seconds of silence");
+          }, silenceThreshold);
+        } else {
+          clearTimeout(silenceTimeout);
+          silenceTimeout = setTimeout(monitorAudioStream, 200);
+        }
+      }
+
+      function submitForm() {
+        const jobTitle = document.getElementById("jobTitle").value;
+
+        fetch("/process_text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ jobTitle: jobTitle }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.transcription) {
+              document.getElementById("result").innerText =
+                "You submitted: " + data.transcription;
+              displayRecommendations(data.recommendations);
+            } else if (data.error) {
+              document.getElementById("result").innerText =
+                "Error: " + data.error;
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      function displayRecommendations(recommendations) {
+        const recommendationsDiv = document.getElementById("recommendations");
+        recommendationsDiv.innerHTML = "";
+
+        if (recommendations && recommendations.length > 0) {
+          recommendations.forEach((rec) => {
+            const jobElement = document.createElement("div");
+            jobElement.classList.add("job-recommendation");
+            jobElement.innerHTML = `
+                        <h3>${rec.title}</h3>
+                        <p class="job-description">${rec.description}...</p>
+                        <p><strong>Company:</strong> ${rec.company}</p>
+                        <p><strong>Location:</strong> ${rec.location}</p>
+                        <p><strong>Score:</strong> ${rec.score.toFixed(2)}</p>
+                        <a href="${rec.link}" target="_blank">More Info ↗</a>
+                    `;
+            recommendationsDiv.appendChild(jobElement);
+          });
+        } else {
+          recommendationsDiv.innerHTML = "<p>No recommendations found.</p>";
+        }
+      }
+    </script>
+  </body>
+</html>
