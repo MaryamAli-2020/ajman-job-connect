@@ -1,0 +1,8 @@
+Gunicorn
+flask
+SpeechRecognition
+pyttsx3
+ffmpeg-python
+pymongo
+pandas
+sentence_transformers
