@@ -1,5 +1,5 @@
 # Ajman Job Connect
-<a href="https://app.commanddash.io/agent?github=MaryamAli-2020/ajman-job-connect"><img src="https://img.shields.io/badge/AI-Code%20Gen-EB9FDA"></a>
+<a href="https://app.commanddash.io/agent?github=https://github.com/MaryamAli-2020/ajman-job-connect"><img src="https://img.shields.io/badge/AI-Code%20Gen-EB9FDA"></a>
 
 Ajman Job Connect is a web application that allows users to search for job recommendations based on text input or voice commands. It integrates a recommendation system that matches job titles with available opportunities from a MongoDB database.
 
