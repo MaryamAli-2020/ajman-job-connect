@@ -26,27 +26,27 @@ Ajman Job Connect is a web application that allows users to search for job recom
 ```
 
 2. Run the build script:
-    ```bash
-    chmod +x build.sh
-    ./build.sh
-    ```
+```bash
+   chmod +x build.sh
+   ./build.sh
+```
 
 ### Running the Application
 
 1. Activate the virtual environment:
-    ```bash
-    source venv/bin/activate
-    ```
+```bash
+   source venv/bin/activate
+ ```
 
-2. Set up MongoDB:
+3. Set up MongoDB:
 
 Create a MongoDB database and collection.
 Update the MONGO_URI in app.py with your MongoDB connection string.
 
 3. Run the Flask application:
-    ```bash
-    python app.py
-    ```
+```bash
+   python app.py
+```
 
 Open your web browser and navigate to http://localhost:5000 to use Ajman Job Connect.
 
