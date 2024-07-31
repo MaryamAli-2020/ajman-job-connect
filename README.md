@@ -62,18 +62,16 @@ View personalized job recommendations and update your profile for better matches
 - Inspired by the job search functionality of popular job boards.
 - Special thanks to the Ajman government for their support.
 
-## Results 
-### App
-<img src="results/demo.png" alt="Demo" width="400" />
+## Results
 
-### Authentication Page
-<img src="results/user auth.png" alt="User Auth" width="400"/>
+| App | Authentication Page |
+|-----|---------------------|
+| ![Demo](results/demo.png) | ![User Auth](results/user auth.png) |
 
-### Recommendation Generation
-<img src="results/recommender sys" alt="Recommender System" width="400"/>
+| Recommendation Generation | Profile Page |
+|---------------------------|--------------|
+| ![Recommender System](results/recommender sys) | ![User Profile](results/user profile.png) |
 
-### Profile Page
-<img src="results/user profile.png" alt="User Profile" width="400" />
 
 
 
