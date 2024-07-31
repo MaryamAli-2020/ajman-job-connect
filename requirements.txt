@@ -5,3 +5,6 @@ ffmpeg-python
 pymongo
 pandas
 sentence_transformers
+bcrypt
+pdfminer.six
+Pillow
