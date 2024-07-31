@@ -19,32 +19,48 @@ Ajman Job Connect is a web application that allows users to search for job recom
 
 ## Installation
 
-Clone the repository:
+1. Clone the repository:
 ```bash
    git clone https://github.com/MaryamAli-2020/ajman-job-connect.git
    cd ajman-job-connect
 ```
-Install dependencies:
-```bash
-pip install -r requirements.txt
-```
 
-Set up MongoDB:
+2. Run the build script:
+    ```bash
+    chmod +x build.sh
+    ./build.sh
+    ```
+
+### Running the Application
+
+1. Activate the virtual environment:
+    ```bash
+    source venv/bin/activate
+    ```
+
+2. Set up MongoDB:
 
 Create a MongoDB database and collection.
 Update the MONGO_URI in app.py with your MongoDB connection string.
-Run the Flask application:
 
-```bash
-python app.py
-```
+3. Run the Flask application:
+    ```bash
+    python app.py
+    ```
 
 Open your web browser and navigate to http://localhost:5000 to use Ajman Job Connect.
 
 ## Usage
+
 Enter a job title in the input field and click "Submit" to get job recommendations.
 Click on the microphone button to start voice input. Speak a job title, and the application will transcribe your speech, display it, and fetch job recommendations based on the transcribed text.
-Job recommendations will be displayed below the input form, showing details such as company, location, and a relevance score.
+View personalized job recommendations and update your profile for better matches.
+
+
+## Acknowledgments
+
+- Inspired by the job search functionality of popular job boards.
+- Special thanks to the Ajman government for their support.
 
 ## Results 
 ### Home Page
