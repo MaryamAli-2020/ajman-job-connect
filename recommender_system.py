@@ -11,8 +11,10 @@ class JobRecommender:
         self.jobs_df['description'] = self.jobs_df['description'].fillna('')
         self.job_embeddings = self.model.encode(self.jobs_df['description'].tolist(), convert_to_tensor=True)
 
-    def recommend_jobs(self, job_title, top_n=5):
-        query_embedding = self.model.encode(job_title, convert_to_tensor=True)
+    def recommend_jobs(self, job_title, skills, top_n=5, title_weight = 5):
+        weighted_title = (job_title + ' ') * title_weight
+        query = f"{weighted_title} {' '.join(skills)}"  # Combine job_title and skills
+        query_embedding = self.model.encode(query, convert_to_tensor=True)
         cosine_scores = util.cos_sim(query_embedding, self.job_embeddings)[0]
 
         # Ensure top_n is within the range of available cosine_scores
