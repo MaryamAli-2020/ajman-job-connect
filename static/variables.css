@@ -1,0 +1,189 @@
+
+/*color palette*/
+:root {
+    --bg-color: #FFFAFA;
+    --primary-color: #1762b8; /*#007bff*/
+    --secondary-color: #373c46; /*#333333*/
+    --heading-font: 'Poppins', sans-serif;
+    --body-font: 'Poppins', sans-serif;
+    --toolbar-bg-color: #ffffff;
+    --toolbar-icon-color: #333333;
+    --toolbar-icon-hover-color: #007bff;
+}
+
+.bottom-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    background-color: var(--toolbar-bg-color);
+    border-top: 1px solid #ddd;
+    padding: 10px 0;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000; 
+}
+
+.toolbar-icon {
+    text-decoration: none;
+    color: var(--toolbar-icon-color);
+    text-align: center;
+}
+
+    .toolbar-icon i {
+        font-size: 24px;
+        display: block;
+    }
+
+.toolbar-label {
+    display: block;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.toolbar-button, .toolbar-icon {
+    background: none;
+    border: none;
+    color: var(--toolbar-icon-color);
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    text-decoration: none; /* Ensure no underline */
+}
+
+    .toolbar-button i, .toolbar-icon i {
+        font-size: 24px;
+        display: block;
+        text-decoration: none; /* Ensure no underline */
+    }
+
+    .toolbar-button:hover, .toolbar-icon:hover {
+        color: var(--toolbar-icon-hover-color);
+        text-decoration: none; /* Ensure no underline on hover */
+    }
+
+    .toolbar-button i:hover, .toolbar-icon i:hover {
+        text-decoration: none; /* Ensure no underline on hover */
+    }
+
+.toolbar-icon.active {
+    color: var(--toolbar-icon-hover-color);
+}
+
+@media (max-width: 768px) {
+    .toolbar-icon i {
+        font-size: 20px;
+    }
+
+    .toolbar-label {
+        font-size: 10px;
+    }
+}
+
+/* Custom Scrollbar for Webkit Browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background color of the scrollbar track */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 10px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555; /* Color of the scrollbar thumb on hover */
+    }
+
+/* Custom Scrollbar for Firefox */
+html {
+    scrollbar-width: thin; /* Width of the scrollbar */
+    scrollbar-color: #888 #f1f1f1; /* Scrollbar thumb and track color */
+}
+
+/* Custom Scrollbar for Edge */
+@supports (-ms-overflow-style: none) {
+    .your-scrollable-element {
+        -ms-overflow-style: scrollbar; /* Custom scrollbar style for Edge */
+    }
+}
+
+
+.logo img {
+	max-width: 75%;
+	height: auto;
+}
+
+/* Apply transition effect */
+button, input, textarea {
+    transition: transform 0.2s ease-in-out;
+    outline: none; /* Remove default outline */
+    border: none; /* Remove default border */
+    box-shadow: none; /* Remove default box shadow */
+}
+
+    /* Apply zoom effect on click */
+    button:active, input:active, textarea:active {
+        transform: scale(1.1);
+    }
+
+    /* Add a cute light blue outline on focus */
+    input:focus, textarea:focus {
+        outline: 2px solid lightblue;
+        outline-offset: 2px; /* Adjusts the position of the outline */
+    }
+
+    /* Optional: Add a subtle box shadow to enhance focus effect */
+    input:focus, textarea:focus {
+        box-shadow: 0 0 5px rgba(173, 216, 230, 0.5); /* Light blue shadow */
+    }
+
+    button:focus {
+        outline: none;
+    }
+
+
+/* Adjusting the toolbar for desktop view */
+@media (min-width: 769px) {
+    .bottom-toolbar {
+        position: fixed;
+        top: 0; /* Top of the page */
+        right: 0; /* Right side */
+        width: 60px; /* Width of the vertical toolbar */
+        height: 100%; /* Full height of the screen */
+        display: flex;
+        flex-direction: column; /* Vertical arrangement */
+        justify-content: center; /* Center items vertically */
+        background-color: var(--toolbar-bg-color);
+        border-left: 1px solid #ddd; /* Border on the left side */
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Shadow on the right */
+        z-index: 1000;
+    }
+
+    .toolbar-icon {
+        text-decoration: none;
+        color: var(--toolbar-icon-color);
+        text-align: center;
+        margin: 90px 0; /* Spacing between icons */
+    }
+
+        .toolbar-icon i {
+            font-size: 30px; /* Larger icons for better visibility */
+        }
+
+    .toolbar-label {
+        display: none; /* Hide labels for a cleaner look */
+    }
+
+    @media (max-width: 768px) {
+        .bottom-toolbar {
+            display: flex;
+        }
+    }
+}
