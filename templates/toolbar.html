@@ -1,0 +1,16 @@
+<div class="bottom-toolbar">
+    <a href="/profile" class="toolbar-icon {% if active_page == 'profile' %}active{% endif %}">
+        <i class="fas fa-user"></i>
+        <span class="toolbar-label"></span>
+    </a>
+    <a href="/" class="toolbar-icon {% if active_page == 'index' %}active{% endif %}">
+        <i class="fas fa-search"></i>
+        <span class="toolbar-label"></span>
+    </a>
+    <form action="/logout" method="post" class="toolbar-icon">
+        <button type="submit" class="toolbar-button">
+            <i class="fas fa-sign-out"></i>
+            <span class="toolbar-label"></span>
+        </button>
+    </form>
+</div>
