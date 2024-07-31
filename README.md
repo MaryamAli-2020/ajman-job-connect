@@ -63,23 +63,17 @@ View personalized job recommendations and update your profile for better matches
 - Special thanks to the Ajman government for their support.
 
 ## Results 
-### Home Page
-<img src="results/home.png" alt="Home Page" width="400" />
+### App
+<img src="results/demo.png" alt="Demo" width="400" />
 
-### Results for "Marketing" and "Data Engineer" Job Titles
-<table>
-  <tr>
-    <td><img src="results/marketing example.png" alt="Marketing Job Results" width="400"/></td>
-    <td><img src="results/data engineer example.png" alt="Data Engineer Job Results" width="400"/></td>
-  </tr>
-  <tr>
-    <td align="center">Marketing Job Results</td>
-    <td align="center">Data Engineer Job Results</td>
-  </tr>
-</table>
+### Authentication Page
+<img src="results/user auth.png" alt="User Auth" width="400"/>
 
-### Voice Feature in Use
-<img src="results/voice feature.png" alt="Voice Feature" width="400" />
+### Recommendation Generation
+<img src="results/recommender sys" alt="Recommender System" width="400"/>
+
+### Profile Page
+<img src="results/user profile.png" alt="User Profile" width="400" />
 
 
 
