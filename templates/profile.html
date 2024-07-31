@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Ajman Job Connect</title>
+    {% include 'links.html' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-picture">
+                <img id="profile-pic" onclick="document.getElementById('file-upload').click();" src="data:image/png;base64,{{ user.get('profile_picture', 'https://via.placeholder.com/150') }}">
+                <input type="file" id="file-upload" name="profile_picture" accept="image/*" onchange="previewImageOrUpload(event)">
+            </div>
+        </div>
+        <div class="profile-info">
+            <h1>{{ cv_info.get('name', 'User') }}</h1>
+            <p>@{{ user.username }}</p>
+        </div>
+
+
+        <div class="cv-upload">
+            <form id="cv-upload-form" action="{{ url_for('upload_cv') }}" method="POST" enctype="multipart/form-data">
+                <label for="cv-upload" class="custom-file-button">
+                    <span>Select CV</span>
+                </label>
+                <input type="file" id="cv-upload" name="cv" accept=".pdf" class="custom-file-input" onchange="showFileName(event)" >
+                <button type="submit" class="custom-upload-icon">
+                    <i class="fa-solid fa-upload"></i>
+                </button>
+            </form>
+            <div id="file-name" class="file-name"></div>
+        </div>
+
+
+
+        <div class="profile-details">
+            <form id="profile-form" action="{{ url_for('update_profile') }}" method="POST">
+                <input type="hidden" name="user_id" value="{{ user._id }}">
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Phone:</strong> <input type="text" id="phone" name="phone" value="{{ cv_info.get('phone', 'N/A') }}" readonly></p>
+                <p><strong>Skills:</strong> <input type="text" id="skills" name="skills" value="{{ cv_info.get('skills', 'N/A') }}" readonly></p>
+                <p><strong>Education:</strong> <textarea id="education" name="education" rows="4" readonly>{{ cv_info.get('education', 'N/A') }}</textarea></p>
+                <button type="button" id="edit-button" class="edit-button" onclick="enableEditing()">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="submit" id="save-button" class="edit-button" style="display: none;">
+                    <i class="fas fa-save"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% include 'toolbar.html' %}
+
+    <script>
+        function previewImageOrUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('profile-pic').src = e.target.result;
+                    document.getElementById('upload-text').style.display = 'none'; // Hide upload text
+                }
+                reader.readAsDataURL(file);
+
+                // Submit form to upload the profile picture
+                const formData = new FormData();
+                formData.append('profile_picture', file);
+
+                fetch('{{ url_for("upload_profile_picture") }}', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.json()).then(data => {
+                    if (data.status === 'success') {
+                        console.log('Profile picture uploaded successfully');
+                    } else {
+                        console.error('Failed to upload profile picture');
+                    }
+                }).catch(error => console.error('Error:', error));
+            }
+        }
+
+        function uploadCv(event) {
+            // Optionally handle CV file selection or form submission if needed
+        }
+
+        function enableEditing() {
+            document.getElementById('phone').readOnly = false;
+            document.getElementById('skills').readOnly = false;
+            document.getElementById('education').readOnly = false;
+            document.getElementById('edit-button').style.display = 'none';
+            document.getElementById('save-button').style.display = 'block';
+        }
+    </script>
+    <script>
+        function showFileName(event) {
+            const input = event.target;
+            const fileName = input.files[0].name;
+            const fileNameDisplay = document.getElementById('file-name');
+            fileNameDisplay.textContent = `Selected: ${fileName}`;
+        }
+
+    </script>
+
+</body>
+</html>
