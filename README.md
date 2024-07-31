@@ -70,7 +70,7 @@ View personalized job recommendations and update your profile for better matches
 
 | Recommendation Generation | Profile Page |
 |---------------------------|--------------|
-| ![Recommender System](results/recommender_sys) | ![User Profile](results/user_profile.png) |
+| ![Recommender System](results/recommender_sys.png) | ![User Profile](results/user_profile.png) |
 
 
 
