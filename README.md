@@ -66,11 +66,11 @@ View personalized job recommendations and update your profile for better matches
 
 | App | Authentication Page |
 |-----|---------------------|
-| ![Demo](results/demo.png) | ![User Auth](results/user auth.png) |
+| ![Demo](results/demo.png) | ![User Auth](results/user_auth.png) |
 
 | Recommendation Generation | Profile Page |
 |---------------------------|--------------|
-| ![Recommender System](results/recommender sys) | ![User Profile](results/user profile.png) |
+| ![Recommender System](results/recommender_sys) | ![User Profile](results/user_profile.png) |
 
 
 
