@@ -17,6 +17,7 @@ import gridfs
 app = Flask(__name__)
 app.secret_key = "developer123"
 
+
 MONGO_URI = "mongodb+srv://dda:ddainternship@data-jobs.l7kc2ku.mongodb.net/?retryWrites=true&w=majority&appName=data-jobs"
 
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=50000, connectTimeoutMS=50000, socketTimeoutMS=50000)
@@ -38,6 +39,8 @@ except Exception as e:
     raise
 
 r = sr.Recognizer()
+# job_recommender = JobRecommender(jobs_df)  
+
 
 def speaktext(command):
     engine = pyttsx3.init()
@@ -239,7 +242,7 @@ def session_userskills():
            user_skills = user.get('cv_info', {}).get('skills', [])
            if not isinstance(user_skills, list):
               user_skills = [user_skills]
-    return user_skills;
+    return user_skills
                
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
@@ -281,9 +284,24 @@ def process_text():
     try:
         data = request.get_json()
         job_title = data['jobTitle'].lower()
+        job_type = data.get('jobType', 'all').lower()
+        kawader_filter = data.get('kawaderFilter', 'all').lower() 
         user_skills = session_userskills()
 
+        # Initialize filtered DataFrame with conditions
+        conditions = [True] * len(jobs_df)  # Start with all True
+        
+        if job_type == 'internship':
+            conditions &= (jobs_df['type'] == 'internship')
+        elif job_type == 'job':
+            conditions &= (jobs_df['type'] == 'job')
 
+        if kawader_filter == 'kawader':
+            conditions &= (jobs_df['link'] == 'kawader')
+
+        filtered_jobs_df = jobs_df[conditions]
+
+        # Use the filtered DataFrame for recommendations
         recommendations = job_recommender.recommend_jobs(job_title, user_skills)
 
         return jsonify({"transcription": job_title, "recommendations": recommendations})
@@ -291,6 +309,7 @@ def process_text():
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
