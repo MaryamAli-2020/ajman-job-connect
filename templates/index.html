@@ -1,215 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Ajman Job Connect</title>
     {% include 'links.html' %}
     <link rel="stylesheet" type="text/css" href="static/styles.css" />
+  </head>
+  <body>
+    <!-- Loading indicator -->
+    <!-- Loading indicator -->
+    <div id="loading" class="loading">
+      <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
 
-</head>
-<body>
     <!--added alert-->
     <div class="ui-alert ui-alert--primary" role="alert">
-        <div class="ui-icon ui-icon--info-circle"></div>
-        <div class="ui-alert-inner">
-            <strong>Hi there!</strong> To help you receive better recommendations, please adjust your profile.
-        </div>
-        <a href="/profile" class="ui-alert-btn ui-btn--sm ui-btn--primary">Profile</a>
-        <button type="button" class="ui-btn-close" aria-label="Close">&times;</button>
+      <div class="ui-icon ui-icon--info-circle"></div>
+      <div class="ui-alert-inner">
+        <strong>Hi there!</strong> To help you receive better recommendations,
+        please adjust your profile.
+      </div>
+      <a href="/profile" class="ui-alert-btn ui-btn--sm ui-btn--primary"
+        >Profile</a
+      >
+      <button type="button" class="ui-btn-close" aria-label="Close">
+        &times;
+      </button>
     </div>
-
 
     <div class="container">
+      <div class="logo-container">
+        <img
+          src="{{ url_for('static', filename='logo.png') }}"
+          alt="Logo"
+          class="img-fluid logo"
+        />
+      </div>
 
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="img-fluid logo">
+      <form id="jobForm">
+        <div class="input-group">
+          <input
+            type="text"
+            id="jobTitle"
+            name="jobTitle"
+            placeholder="Search for jobs...."
+          />
+          <button type="button" id="micButton" onclick="startRecording()">
+            <i class="fa fa-microphone"></i>
+          </button>
+          <button type="button" id="submitButton" onclick="submitForm()">
+            <i class="fa fa-search"></i>
+          </button>
         </div>
+        <div class="filter-group">
+          <select id="kawaderFilter">
+            <option value="all">All Jobs</option>
+            <option value="kawader">Kawader</option>
+          </select>
 
-        <form id="jobForm">
-            <div class="input-group">
-                <input type="text" id="jobTitle" name="jobTitle" placeholder="Search for jobs...." />
-                <button type="button" id="micButton" onclick="startRecording()">
-                    <i class="fa fa-microphone"></i>
-                </button>
-                <button type="button" id="submitButton" onclick="submitForm()">
-                    <i class="fa fa-search"></i>
-                </button>
-            </div>
-        </form>
-        <br />
+          <select id="jobType">
+            <option value="all">All Types</option>
+            <option value="internship">Internships</option>
+            <option value="job">Jobs</option>
+          </select>
+        </div>
+      </form>
 
+      <br />
 
-        <p id="result"></p>
-        <div id="recommendations"></div>
+      <p id="result"></p>
+      <div id="recommendations"></div>
+
+      <div id="pagination" class="pagination"></div>
     </div>
+
     {% include 'toolbar.html' %}
 
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
-        let silenceTimeout;
-        const silenceThreshold = 5000; // 5 seconds of silence
-        const audioContext = new (window.AudioContext ||
-            window.webkitAudioContext)();
-        let analyser;
-        let dataArray;
+      function showLoading() {
+        document.getElementById("loading").style.display = "block";
+      }
 
-        function startRecording() {
+      function hideLoading() {
+        document.getElementById("loading").style.display = "none";
+      }
+    </script>
+
+    <script>
+      let mediaRecorder;
+      let audioChunks = [];
+      let silenceTimeout;
+      const silenceThreshold = 5000; // 5 seconds of silence
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      let analyser;
+      let dataArray;
+      let allRecommendations = [];
+      const recommendationsPerPage = 5;
+      let currentPage = 1;
+
+      function startRecording() {
         audioChunks = [];
         document.getElementById("result").innerText = "";
         document.getElementById("jobTitle").value = "";
         document.getElementById("micButton").disabled = true;
 
         document.getElementById("micButton").innerHTML =
-            '<i class="fa fa-spinner fa-spin"></i> <span class="listen"></span>';
+          '<i class="fa fa-spinner fa-spin"></i> <span class="listen"></span>';
 
         navigator.mediaDevices
-            .getUserMedia({ audio: true })
-            .then((stream) => {
-                const audioSource = audioContext.createMediaStreamSource(stream);
-                analyser = audioContext.createAnalyser();
-                audioSource.connect(analyser);
-                analyser.fftSize = 256;
-                const bufferLength = analyser.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
+          .getUserMedia({ audio: true })
+          .then((stream) => {
+            const audioSource = audioContext.createMediaStreamSource(stream);
+            analyser = audioContext.createAnalyser();
+            audioSource.connect(analyser);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
 
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start();
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
 
-                mediaRecorder.ondataavailable = function (e) {
-                    audioChunks.push(e.data);
-                };
+            mediaRecorder.ondataavailable = function (e) {
+              audioChunks.push(e.data);
+            };
 
-                mediaRecorder.onstop = function () {
-                    const blob = new Blob(audioChunks, { type: "audio/wav" });
-                    const formData = new FormData();
-                    formData.append("audio_data", blob);
+            mediaRecorder.onstop = function () {
+              const blob = new Blob(audioChunks, { type: "audio/wav" });
+              const formData = new FormData();
+              formData.append("audio_data", blob);
 
-                    fetch("/process_audio", {
-                        method: "POST",
-                        body: formData,
-                    })
-                        .then((response) => response.json())
-                        .then((data) => {
-                            if (data.transcription) {
-                                document.getElementById("result").innerText =
-                                    "Searching: " + data.transcription;
-                                document.getElementById("jobTitle").value =
-                                    data.transcription;
-                                submitForm();
-                            } else if (data.error) {
-                                document.getElementById("result").innerText =
-                                    "Error: " + data.error;
-                            }
-                        })
-                        .catch((error) => {
-                            console.error("Error:", error);
-                        })
-                        .finally(() => {
-                            document.getElementById("micButton").disabled = false;
-                            document.getElementById("micButton").innerHTML =
-                                '<i class="fa fa-microphone"></i>';
-                        });
-                };
-
-                monitorAudioStream();
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-                document.getElementById("micButton").disabled = false;
-                document.getElementById("micButton").innerHTML =
+              fetch("/process_audio", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.transcription) {
+                    document.getElementById("jobTitle").value =
+                      data.transcription;
+                    submitForm();
+                  } else if (data.error) {
+                    document.getElementById("result").innerText =
+                      "Error: " + data.error;
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error);
+                })
+                .finally(() => {
+                  document.getElementById("micButton").disabled = false;
+                  document.getElementById("micButton").innerHTML =
                     '<i class="fa fa-microphone"></i>';
-            });
-    }
+                });
+            };
 
-    function monitorAudioStream() {
+            monitorAudioStream();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            document.getElementById("micButton").disabled = false;
+            document.getElementById("micButton").innerHTML =
+              '<i class="fa fa-microphone"></i>';
+          });
+      }
+
+      function monitorAudioStream() {
         analyser.getByteTimeDomainData(dataArray);
 
         let silenceDetected = true;
         for (let i = 0; i < dataArray.length; i++) {
-            if (dataArray[i] > 128 + 10 || dataArray[i] < 128 - 10) {
-                silenceDetected = false;
-                break;
-            }
+          if (dataArray[i] > 128 + 10 || dataArray[i] < 128 - 10) {
+            silenceDetected = false;
+            break;
+          }
         }
 
         if (silenceDetected) {
-            clearTimeout(silenceTimeout);
-            silenceTimeout = setTimeout(() => {
-                mediaRecorder.stop();
-                audioContext.close();
-                console.log("Recording stopped due to 5 seconds of silence");
-            }, silenceThreshold);
+          clearTimeout(silenceTimeout);
+          silenceTimeout = setTimeout(() => {
+            mediaRecorder.stop();
+            audioContext.close();
+            console.log("Recording stopped due to 5 seconds of silence");
+          }, silenceThreshold);
         } else {
-            clearTimeout(silenceTimeout);
-            silenceTimeout = setTimeout(monitorAudioStream, 200);
+          clearTimeout(silenceTimeout);
+          silenceTimeout = setTimeout(monitorAudioStream, 200);
         }
-    }
+      }
 
+      function submitForm() {
+        const jobTitle = document.getElementById("jobTitle").value;
+        const jobType = document.getElementById("jobType").value;
+        const kawaderFilter = document.getElementById("kawaderFilter").value; // Get Kawader filter value
 
-        function submitForm() {
-            const jobTitle = document.getElementById("jobTitle").value;
+        currentPage = 1;
 
-            fetch("/process_text", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ jobTitle: jobTitle }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.transcription) {
-                        document.getElementById("result").innerText =
-                            "Searching: " + data.transcription;
-                        displayRecommendations(data.recommendations);
-                    } else if (data.error) {
-                        document.getElementById("result").innerText =
-                            "Error: " + data.error;
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error:", error);
-                });
-        }
+        showLoading();
 
-        function displayRecommendations(recommendations) {
-            const recommendationsDiv = document.getElementById("recommendations");
-            recommendationsDiv.innerHTML = "";
-
-            if (recommendations && recommendations.length > 0) {
-                recommendations.forEach((rec) => {
-                    const jobElement = document.createElement("div");
-                    jobElement.classList.add("job-recommendation");
-                    jobElement.innerHTML = `
-                                          <h3><strong>${rec.title}</strong></h3>
-                                          <p class="job-description">${rec.description}...</p>
-                                          <p><strong>Company:</strong> ${rec.company}</p>
-                                          <p><strong>Location:</strong> ${rec.location}</p>
-                                          <p><strong>Score:</strong> ${rec.score.toFixed(2)}</p>
-                                          <a href="${rec.link}" target="_blank">More Info ↗</a>
-                                                                              `;
-                    recommendationsDiv.appendChild(jobElement);
-                });
-            } else {
-                recommendationsDiv.innerHTML = "<p>No recommendations found.</p>";
+        fetch("/process_text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            jobTitle: jobTitle,
+            jobType: jobType,
+            kawaderFilter: kawaderFilter, // Send Kawader filter value
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.recommendations) {
+              allRecommendations = data.recommendations;
+              displayRecommendations();
+              createPagination(
+                allRecommendations.length,
+                recommendationsPerPage
+              );
+            } else if (data.error) {
+              document.getElementById("result").innerText =
+                "Error: " + data.error;
             }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          })
+          .finally(() => {
+            hideLoading();
+          });
+      }
+
+      function displayRecommendations() {
+        const recommendationsDiv = document.getElementById("recommendations");
+        recommendationsDiv.innerHTML = "";
+
+        const start = (currentPage - 1) * recommendationsPerPage;
+        const end = start + recommendationsPerPage;
+        const recommendationsToShow = allRecommendations.slice(start, end);
+
+        if (recommendationsToShow.length > 0) {
+          recommendationsToShow.forEach((rec) => {
+            const jobElement = document.createElement("div");
+            jobElement.classList.add("job-recommendation");
+            jobElement.innerHTML = `
+                        <h3><strong>${rec.title}</strong></h3>
+                        <p class="job-description">${rec.description}...</p>
+                        <p><strong>Company:</strong> ${rec.company}</p>
+                        <p><strong>Location:</strong> ${rec.location}</p>
+                        <p><strong>Score:</strong> ${rec.score.toFixed(2)}</p>
+                        <a href="${rec.link}" target="_blank">More Info ↗</a>
+                    `;
+            recommendationsDiv.appendChild(jobElement);
+          });
+        } else {
+          recommendationsDiv.innerHTML = "<p>No recommendations found.</p>";
         }
+      }
+
+      function createPagination(total, perPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+        const totalPages = Math.ceil(total / perPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+          const pageButton = document.createElement("button");
+          pageButton.innerText = i;
+          pageButton.disabled = i === currentPage;
+          pageButton.addEventListener("click", () => {
+            currentPage = i;
+            displayRecommendations();
+            scrollToTop();
+            createPagination(total, perPage);
+          });
+          paginationDiv.appendChild(pageButton);
+        }
+      }
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var closeButton = document.querySelector('.ui-btn-close');
-            if (closeButton) {
-                closeButton.addEventListener('click', function () {
-                    var alert = this.closest('.ui-alert');
-                    if (alert) {
-                        alert.style.display = 'none'; // Hide the alert
-                    }
-                });
+      document.addEventListener("DOMContentLoaded", function () {
+        var closeButton = document.querySelector(".ui-btn-close");
+        if (closeButton) {
+          closeButton.addEventListener("click", function () {
+            var alert = this.closest(".ui-alert");
+            if (alert) {
+              alert.style.display = "none"; // Hide the alert
             }
+          });
+        }
+      });
+
+      function scrollToTop() {
+        window.scrollTo({
+          top: document.querySelector(".container").offsetTop,
+          behavior: "smooth",
         });
-
+      }
     </script>
-</body>
-
+  </body>
 </html>
