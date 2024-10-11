@@ -34,13 +34,16 @@ try:
 
     job_recommender = JobRecommender(jobs_df)
 
+    kawader_filter = jobs_df[jobs_df['link'] == 'kawader']
+    internship_filter = jobs_df[jobs_df['type'] == 'internship']
+
+    kawader_recommender = JobRecommender(kawader_filter)
+    internship_recommender = JobRecommender(internship_filter)
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
     raise
 
 r = sr.Recognizer()
-# job_recommender = JobRecommender(jobs_df)  
-
 
 def speaktext(command):
     engine = pyttsx3.init()
@@ -243,7 +246,25 @@ def session_userskills():
            if not isinstance(user_skills, list):
               user_skills = [user_skills]
     return user_skills
-               
+
+def filter(data, job_title, user_skills):
+    try:
+        job_type = data.get('jobType', 'all').lower()
+        kawader_filter = data.get('kawaderFilter', 'all').lower() 
+
+        if job_type == 'internship':
+            recommendations = internship_recommender.recommend_jobs(job_title, user_skills)
+        elif kawader_filter == 'kawader':
+            recommendations = kawader_recommender.recommend_jobs(job_title, user_skills)
+        else:
+            recommendations = job_recommender.recommend_jobs(job_title, user_skills)
+        
+        return recommendations
+    
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
     try:
@@ -281,34 +302,15 @@ def process_audio():
 
 @app.route('/process_text', methods=['POST'])
 def process_text():
-    try:
-        data = request.get_json()
-        job_title = data['jobTitle'].lower()
-        job_type = data.get('jobType', 'all').lower()
-        kawader_filter = data.get('kawaderFilter', 'all').lower() 
-        user_skills = session_userskills()
+    data = request.get_json()
 
-        # Initialize filtered DataFrame with conditions
-        conditions = [True] * len(jobs_df)  # Start with all True
-        
-        if job_type == 'internship':
-            conditions &= (jobs_df['type'] == 'internship')
-        elif job_type == 'job':
-            conditions &= (jobs_df['type'] == 'job')
+    job_title = data['jobTitle'].lower()
+    user_skills = session_userskills()
 
-        if kawader_filter == 'kawader':
-            conditions &= (jobs_df['link'] == 'kawader')
+    recommendations = filter(data, job_title, user_skills)
+    
+    return jsonify({"transcription": job_title, "recommendations": recommendations})
 
-        filtered_jobs_df = jobs_df[conditions]
-
-        # Use the filtered DataFrame for recommendations
-        recommendations = job_recommender.recommend_jobs(job_title, user_skills)
-
-        return jsonify({"transcription": job_title, "recommendations": recommendations})
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
